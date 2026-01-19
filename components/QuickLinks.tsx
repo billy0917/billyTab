@@ -47,6 +47,7 @@ const QuickLinks: React.FC = () => {
   const [editingShortcut, setEditingShortcut] = useState<Shortcut | null>(null);
   const [editIconUrl, setEditIconUrl] = useState('');
   const [editIconData, setEditIconData] = useState<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
 
   useEffect(() => {
     localStorage.setItem('zen_shortcuts', JSON.stringify(shortcuts));
@@ -91,12 +92,46 @@ const QuickLinks: React.FC = () => {
     setEditingShortcut(null);
   };
 
+  const moveShortcut = (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    const fromIndex = shortcuts.findIndex(s => s.id === fromId);
+    const toIndex = shortcuts.findIndex(s => s.id === toId);
+    if (fromIndex === -1 || toIndex === -1) return;
+    const updated = [...shortcuts];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    setShortcuts(updated);
+  };
+
   return (
     <div className="w-full flex flex-col items-center gap-4">
       {/* Grid of Apps */}
       <div className="flex flex-wrap justify-center gap-4 md:gap-6 max-w-5xl">
         {shortcuts.map((shortcut) => (
-          <div key={shortcut.id} className="relative group flex flex-col items-center justify-center">
+          <div
+            key={shortcut.id}
+            className={`relative group flex flex-col items-center justify-center ${draggingId === shortcut.id ? 'opacity-60' : ''}`}
+            draggable
+            onDragStart={(e) => {
+              setDraggingId(shortcut.id);
+              e.dataTransfer.effectAllowed = 'move';
+              e.dataTransfer.setData('text/plain', shortcut.id);
+            }}
+            onDragEnd={() => setDraggingId(null)}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'move';
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              const fromId = e.dataTransfer.getData('text/plain');
+              if (fromId) moveShortcut(fromId, shortcut.id);
+              setDraggingId(null);
+            }}
+            title="Drag to reorder"
+            role="button"
+            aria-label={`Move ${shortcut.title}`}
+          >
             <a
               href={shortcut.url}
               className="w-14 h-14 md:w-16 md:h-16 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-[18px] md:rounded-[22px] flex items-center justify-center transition-all duration-300 shadow-lg group-hover:scale-110 group-hover:shadow-xl border border-white/5"
