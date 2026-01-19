@@ -191,122 +191,125 @@ const QuickLinks: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Edit Panel (Absolute positioning to not push content) */}
+      {/* Edit Panel (Fixed positioning to be centered on screen) */}
       {isEditing && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 glass-panel p-6 rounded-2xl flex flex-col gap-4 animate-fade-in text-white w-[90%] max-w-md shadow-2xl border border-white/20">
-          <div className="flex justify-between items-center mb-1">
-             <h3 className="font-medium text-lg">Add Shortcut</h3>
-             <button onClick={() => setIsEditing(false)} className="text-white/50 hover:text-white">✕</button>
-          </div>
-          <input
-            type="text"
-            placeholder="Name (e.g. YouTube)"
-            value={newShortcut.title}
-            onChange={(e) => setNewShortcut({...newShortcut, title: e.target.value})}
-            className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-black/50 focus:border-white/30 transition-all placeholder-white/30"
-          />
-          <input
-            type="text"
-            placeholder="URL (e.g. youtube.com)"
-            value={newShortcut.url}
-            onChange={(e) => setNewShortcut({...newShortcut, url: e.target.value})}
-            className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-black/50 focus:border-white/30 transition-all placeholder-white/30"
-          />
-          <input
-            type="text"
-            placeholder="Icon URL (optional)"
-            value={newShortcut.iconUrl}
-            onChange={(e) => setNewShortcut({...newShortcut, iconUrl: e.target.value})}
-            className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-black/50 focus:border-white/30 transition-all placeholder-white/30"
-          />
-          <label className="bg-white/10 text-white px-4 py-3 rounded-xl font-semibold hover:bg-white/20 transition-colors cursor-pointer text-center">
-            Upload Icon (optional)
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => {
-                  const result = reader.result?.toString();
-                  if (result) setNewShortcutIconData(result);
-                };
-                reader.readAsDataURL(file);
-                e.currentTarget.value = '';
-              }}
-            />
-          </label>
-          <button 
-            onClick={addShortcut}
-            className="bg-white text-black mt-2 px-6 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors shadow-lg"
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div 
+            className="glass-panel p-6 rounded-2xl flex flex-col gap-4 animate-fade-in text-white w-full max-w-md shadow-2xl border border-white/20 relative z-[101]"
+            onClick={(e) => e.stopPropagation()}
           >
-            Add Shortcut
-          </button>
+            <div className="flex justify-between items-center mb-1">
+               <h3 className="font-medium text-lg">Add Shortcut</h3>
+               <button onClick={() => setIsEditing(false)} className="text-white/50 hover:text-white">✕</button>
+            </div>
+            <input
+              type="text"
+              placeholder="Name (e.g. YouTube)"
+              value={newShortcut.title}
+              onChange={(e) => setNewShortcut({...newShortcut, title: e.target.value})}
+              className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-black/50 focus:border-white/30 transition-all placeholder-white/30"
+            />
+            <input
+              type="text"
+              placeholder="URL (e.g. youtube.com)"
+              value={newShortcut.url}
+              onChange={(e) => setNewShortcut({...newShortcut, url: e.target.value})}
+              className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-black/50 focus:border-white/30 transition-all placeholder-white/30"
+            />
+            <input
+              type="text"
+              placeholder="Icon URL (optional)"
+              value={newShortcut.iconUrl}
+              onChange={(e) => setNewShortcut({...newShortcut, iconUrl: e.target.value})}
+              className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-black/50 focus:border-white/30 transition-all placeholder-white/30"
+            />
+            <label className="bg-white/10 text-white px-4 py-3 rounded-xl font-semibold hover:bg-white/20 transition-colors cursor-pointer text-center">
+              Upload Icon (optional)
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    const result = reader.result?.toString();
+                    if (result) setNewShortcutIconData(result);
+                  };
+                  reader.readAsDataURL(file);
+                  e.currentTarget.value = '';
+                }}
+              />
+            </label>
+            <button 
+              onClick={addShortcut}
+              className="bg-white text-black mt-2 px-6 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors shadow-lg"
+            >
+              Add Shortcut
+            </button>
+          </div>
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[99]" onClick={() => setIsEditing(false)}></div>
         </div>
       )}
 
       {/* Edit Icon Modal */}
       {editingShortcut && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 glass-panel p-6 rounded-2xl flex flex-col gap-4 animate-fade-in text-white w-[90%] max-w-md shadow-2xl border border-white/20">
-          <div className="flex justify-between items-center mb-1">
-             <h3 className="font-medium text-lg">Edit Icon</h3>
-             <button onClick={() => setEditingShortcut(null)} className="text-white/50 hover:text-white">✕</button>
-          </div>
-          <input
-            type="text"
-            placeholder="Icon URL"
-            value={editIconUrl}
-            onChange={(e) => setEditIconUrl(e.target.value)}
-            className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-black/50 focus:border-white/30 transition-all placeholder-white/30"
-          />
-          <label className="bg-white/10 text-white px-4 py-3 rounded-xl font-semibold hover:bg-white/20 transition-colors cursor-pointer text-center">
-            Upload Icon
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div 
+            className="glass-panel p-6 rounded-2xl flex flex-col gap-4 animate-fade-in text-white w-full max-w-md shadow-2xl border border-white/20 relative z-[101]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-1">
+               <h3 className="font-medium text-lg">Edit Icon</h3>
+               <button onClick={() => setEditingShortcut(null)} className="text-white/50 hover:text-white">✕</button>
+            </div>
             <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => {
-                  const result = reader.result?.toString();
-                  if (result) setEditIconData(result);
-                };
-                reader.readAsDataURL(file);
-                e.currentTarget.value = '';
-              }}
+              type="text"
+              placeholder="Icon URL"
+              value={editIconUrl}
+              onChange={(e) => setEditIconUrl(e.target.value)}
+              className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-black/50 focus:border-white/30 transition-all placeholder-white/30"
             />
-          </label>
-          <div className="flex gap-2">
-            <button
-              onClick={saveEditIcon}
-              className="bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors shadow-lg flex-1"
-            >
-              Save Icon
-            </button>
-            <button
-              onClick={clearEditIcon}
-              className="bg-red-500/20 text-red-200 px-6 py-3 rounded-xl font-bold hover:bg-red-500/30 transition-colors shadow-lg"
-            >
-              Remove
-            </button>
+            <label className="bg-white/10 text-white px-4 py-3 rounded-xl font-semibold hover:bg-white/20 transition-colors cursor-pointer text-center">
+              Upload Icon
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    const result = reader.result?.toString();
+                    if (result) setEditIconData(result);
+                  };
+                  reader.readAsDataURL(file);
+                  e.currentTarget.value = '';
+                }}
+              />
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={saveEditIcon}
+                className="bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors shadow-lg flex-1"
+              >
+                Save Icon
+              </button>
+              <button
+                onClick={clearEditIcon}
+                className="bg-red-500/20 text-red-200 px-6 py-3 rounded-xl font-bold hover:bg-red-500/30 transition-colors shadow-lg"
+              >
+                Remove
+              </button>
+            </div>
           </div>
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[99]" onClick={() => setEditingShortcut(null)}></div>
         </div>
       )}
       
-      {/* Dim background when editing */}
-      {(isEditing || editingShortcut) && (
-        <div
-          className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
-          onClick={() => {
-            setIsEditing(false);
-            setEditingShortcut(null);
-          }}
-        ></div>
-      )}
+      {/* Dim background helper removed as it's now integrated or redundant */}
     </div>
   );
 };
