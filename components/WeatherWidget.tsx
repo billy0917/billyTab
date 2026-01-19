@@ -114,7 +114,7 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ size }) => {
   const isSmall = size === 'small';
 
   return (
-    <div className={`w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 rounded-[2rem] text-white shadow-2xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 border border-white/10 ${isSmall ? 'p-4' : 'p-6'}`}>
+    <div className={`w-full h-full bg-blue-600/10 backdrop-blur-3xl rounded-[2rem] text-white shadow-2xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 border border-white/20 ring-1 ring-white/10 ${isSmall ? 'p-4' : 'p-6'}`}>
       
       {/* Background Effect */}
       <div className={`absolute top-[-20px] right-[-20px] rounded-full blur-2xl ${weather.current.isDay ? 'bg-yellow-300/20' : 'bg-purple-900/40'} ${isSmall ? 'w-20 h-20' : 'w-32 h-32'}`}></div>
