@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shortcut } from '../types';
 
@@ -192,7 +193,7 @@ const QuickLinks: React.FC = () => {
       </div>
 
       {/* Edit Panel (Fixed positioning to be centered on screen) */}
-      {isEditing && (
+      {isEditing && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div 
             className="glass-panel p-6 rounded-2xl flex flex-col gap-4 animate-fade-in text-white w-full max-w-md shadow-2xl border border-white/20 relative z-[101]"
@@ -250,11 +251,12 @@ const QuickLinks: React.FC = () => {
             </button>
           </div>
           <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[99]" onClick={() => setIsEditing(false)}></div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Edit Icon Modal */}
-      {editingShortcut && (
+      {editingShortcut && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div 
             className="glass-panel p-6 rounded-2xl flex flex-col gap-4 animate-fade-in text-white w-full max-w-md shadow-2xl border border-white/20 relative z-[101]"
@@ -306,7 +308,8 @@ const QuickLinks: React.FC = () => {
             </div>
           </div>
           <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[99]" onClick={() => setEditingShortcut(null)}></div>
-        </div>
+        </div>,
+        document.body
       )}
       
       {/* Dim background helper removed as it's now integrated or redundant */}
