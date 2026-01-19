@@ -181,6 +181,65 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         </div>
 
+        <div className="mt-6 pt-6 border-t border-white/10">
+          <h3 className="text-sm font-semibold mb-3">Backup & Restore</h3>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                const settings = {
+                  widgetConfig: localStorage.getItem('zen_widget_config'),
+                  shortcuts: localStorage.getItem('zen_shortcuts'),
+                  background: localStorage.getItem('zen_custom_background'),
+                };
+                const blob = new Blob([JSON.stringify(settings)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `zentab-backup-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }}
+              className="flex-1 bg-white/10 text-white px-4 py-2 rounded-lg font-semibold hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export
+            </button>
+            <label className="flex-1 bg-white/10 text-white px-4 py-2 rounded-lg font-semibold hover:bg-white/20 transition-colors cursor-pointer flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Import
+              <input
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    try {
+                      const settings = JSON.parse(event.target?.result as string);
+                      if (settings.widgetConfig) localStorage.setItem('zen_widget_config', settings.widgetConfig);
+                      if (settings.shortcuts) localStorage.setItem('zen_shortcuts', settings.shortcuts);
+                      if (settings.background) {
+                        localStorage.setItem('zen_custom_background', settings.background);
+                      } else {
+                        localStorage.removeItem('zen_custom_background');
+                      }
+                      window.location.reload();
+                    } catch (err) {
+                      alert('Invalid backup file');
+                    }
+                  };
+                  reader.readAsText(file);
+                  e.currentTarget.value = '';
+                }}
+              />
+            </label>
+          </div>
+        </div>
+
         <div className="mt-6 pt-4 border-t border-white/10 text-center">
           <p className="text-xs text-white/40">Adjust sizes: S (1 col), M (2 cols), L (Full)</p>
         </div>
