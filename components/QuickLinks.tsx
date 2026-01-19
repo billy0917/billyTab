@@ -25,8 +25,14 @@ const getFaviconUrl = (urlString: string) => {
 const normalizeIconUrl = (value: string) => {
   const trimmed = value.trim();
   if (!trimmed) return '';
-  if (trimmed.startsWith('http') || trimmed.startsWith('data:')) return trimmed;
-  return `https://${trimmed}`;
+  if (trimmed.startsWith('data:')) return trimmed;
+
+  const withProtocol = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
+  const isImageUrl = /\.(png|jpe?g|gif|webp|svg|ico)(\?.*)?$/i.test(withProtocol);
+
+  if (isImageUrl) return withProtocol;
+
+  return getFaviconUrl(withProtocol);
 };
 
 const QuickLinks: React.FC = () => {
