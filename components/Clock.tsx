@@ -37,7 +37,7 @@ const Clock: React.FC<ClockProps> = ({ size }) => {
 
   return (
     <div 
-      className="w-full h-full bg-white rounded-[2rem] flex items-center justify-center relative overflow-hidden shadow-2xl border border-gray-200 group hover:scale-[1.02] transition-transform duration-300"
+      className="w-full h-full bg-white/10 backdrop-blur-3xl rounded-[2rem] flex items-center justify-center relative overflow-hidden shadow-2xl border border-white/20 ring-1 ring-white/10 group hover:scale-[1.02] transition-transform duration-300"
     >
         <svg viewBox="0 0 200 200" className="w-full h-full p-2" preserveAspectRatio="xMidYMid meet">
           
@@ -52,12 +52,12 @@ const Clock: React.FC<ClockProps> = ({ size }) => {
             const x2 = 100 + r2 * Math.sin(angle);
             const y2 = 100 - r2 * Math.cos(angle);
             return (
-              <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={isHourTick ? "#ef4444" : "#e2e8f0"} strokeWidth={isHourTick ? 2 : 1} strokeLinecap="round" />
+              <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={isHourTick ? "#ef4444" : "rgba(255,255,255,0.2)"} strokeWidth={isHourTick ? 2 : 1} strokeLinecap="round" />
             );
           })}
           
           {/* Progress Ring Background */}
-          <circle cx="100" cy="100" r={radius} fill="none" stroke="#f8fafc" strokeWidth={isSmall ? "8" : "12"} />
+          <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={isSmall ? "8" : "12"} />
 
           <defs>
              <linearGradient id="clockGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -78,7 +78,7 @@ const Clock: React.FC<ClockProps> = ({ size }) => {
           {/* Time Text */}
           <text
             x="100" y="100" textAnchor="middle" dominantBaseline="central"
-            fill="#111827" fontSize={isSmall ? "56" : "48"} fontWeight="bold"
+            fill="white" fontSize={isSmall ? "56" : "48"} fontWeight="bold"
             style={{ fontVariantNumeric: "tabular-nums" }}
           >
             {formatTime(time)}
@@ -88,7 +88,7 @@ const Clock: React.FC<ClockProps> = ({ size }) => {
           {!isSmall && (
           <text
             x="100" y="135" textAnchor="middle" dominantBaseline="central"
-            fill="#6b7280" fontSize="10" fontWeight="600" letterSpacing="1" className="uppercase"
+            fill="rgba(255,255,255,0.6)" fontSize="10" fontWeight="600" letterSpacing="1" className="uppercase"
           >
             {formatDate(time)}
           </text>
