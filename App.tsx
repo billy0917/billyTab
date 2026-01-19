@@ -24,21 +24,39 @@ const DEFAULT_WIDGET_CONFIG: WidgetConfig[] = [
 const App: React.FC = () => {
   const [bgImage, setBgImage] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [customBackground, setCustomBackground] = useState<string | null>(() => {
+    return localStorage.getItem('zen_custom_background');
+  });
   const [widgetConfig, setWidgetConfig] = useState<WidgetConfig[]>(() => {
     const saved = localStorage.getItem('zen_widget_config');
     return saved ? JSON.parse(saved) : DEFAULT_WIDGET_CONFIG;
   });
 
   useEffect(() => {
+    if (customBackground) {
+      setBgImage(customBackground);
+      localStorage.setItem('zen_custom_background', customBackground);
+      return;
+    }
+
+    localStorage.removeItem('zen_custom_background');
     const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
     const img = new Image();
     img.src = randomBg;
     img.onload = () => setBgImage(randomBg);
-  }, []);
+  }, [customBackground]);
 
   useEffect(() => {
     localStorage.setItem('zen_widget_config', JSON.stringify(widgetConfig));
   }, [widgetConfig]);
+
+  const handleBackgroundChange = (url: string) => {
+    setCustomBackground(url);
+  };
+
+  const handleBackgroundReset = () => {
+    setCustomBackground(null);
+  };
 
   // Helper to get grid classes based on size
   const getGridSpan = (size: string) => {
@@ -119,6 +137,9 @@ const App: React.FC = () => {
         onClose={() => setIsSettingsOpen(false)}
         config={widgetConfig}
         onConfigChange={setWidgetConfig}
+        backgroundImage={customBackground}
+        onBackgroundChange={handleBackgroundChange}
+        onBackgroundReset={handleBackgroundReset}
       />
 
       <style>{`

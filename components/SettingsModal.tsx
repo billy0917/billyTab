@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { WidgetConfig, WidgetSize } from '../types';
 
 interface SettingsModalProps {
@@ -6,10 +6,27 @@ interface SettingsModalProps {
   onClose: () => void;
   config: WidgetConfig[];
   onConfigChange: (newConfig: WidgetConfig[]) => void;
+  backgroundImage: string | null;
+  onBackgroundChange: (url: string) => void;
+  onBackgroundReset: () => void;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, onConfigChange }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({
+  isOpen,
+  onClose,
+  config,
+  onConfigChange,
+  backgroundImage,
+  onBackgroundChange,
+  onBackgroundReset
+}) => {
   if (!isOpen) return null;
+
+  const [bgUrlInput, setBgUrlInput] = useState('');
+
+  useEffect(() => {
+    setBgUrlInput(backgroundImage && !backgroundImage.startsWith('data:') ? backgroundImage : '');
+  }, [backgroundImage]);
 
   const handleToggleVisibility = (id: string) => {
     const newConfig = config.map(w => 
@@ -109,6 +126,59 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-white/10">
+          <h3 className="text-sm font-semibold mb-3">Background Image</h3>
+          <div className="flex flex-col gap-3">
+            <input
+              type="text"
+              placeholder="Paste image URL"
+              value={bgUrlInput}
+              onChange={(e) => setBgUrlInput(e.target.value)}
+              className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-black/50 focus:border-white/30 transition-all placeholder-white/30"
+            />
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => {
+                  if (!bgUrlInput.trim()) return;
+                  const formatted = bgUrlInput.startsWith('http') || bgUrlInput.startsWith('data:')
+                    ? bgUrlInput
+                    : `https://${bgUrlInput}`;
+                  onBackgroundChange(formatted);
+                }}
+                className="bg-white text-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+              >
+                Apply URL
+              </button>
+              <label className="bg-white/10 text-white px-4 py-2 rounded-lg font-semibold hover:bg-white/20 transition-colors cursor-pointer">
+                Upload Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const result = reader.result?.toString();
+                      if (result) onBackgroundChange(result);
+                    };
+                    reader.readAsDataURL(file);
+                    e.currentTarget.value = '';
+                  }}
+                />
+              </label>
+              <button
+                onClick={onBackgroundReset}
+                className="bg-red-500/20 text-red-200 px-4 py-2 rounded-lg font-semibold hover:bg-red-500/30 transition-colors"
+              >
+                Reset to Random
+              </button>
+            </div>
+            <p className="text-xs text-white/40">Custom background is saved locally in your browser.</p>
+          </div>
         </div>
 
         <div className="mt-6 pt-4 border-t border-white/10 text-center">
