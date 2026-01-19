@@ -19,7 +19,7 @@ export const fetchHKWeather = async (): Promise<WeatherData> => {
   try {
     // We use the 'current' parameter which returns a 'current' object in the JSON
     const response = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code&timezone=auto&forecast_days=1`
+      `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code&timezone=auto&forecast_days=2`
     );
     
     if (!response.ok) throw new Error('Weather API failed');
