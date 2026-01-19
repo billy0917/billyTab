@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Shortcut } from '../types';
 
 const DEFAULT_SHORTCUTS: Shortcut[] = [
@@ -107,10 +108,16 @@ const QuickLinks: React.FC = () => {
     <div className="w-full flex flex-col items-center gap-4">
       {/* Grid of Apps */}
       <div className="flex flex-wrap justify-center gap-4 md:gap-6 max-w-5xl">
+        <AnimatePresence initial={false}>
         {shortcuts.map((shortcut) => (
-          <div
+          <motion.div
+            layout
             key={shortcut.id}
-            className={`relative group flex flex-col items-center justify-center ${draggingId === shortcut.id ? 'opacity-60' : ''}`}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className={`relative group flex flex-col items-center justify-center ${draggingId === shortcut.id ? 'opacity-40' : ''}`}
             draggable
             onDragStart={(e) => {
               setDraggingId(shortcut.id);
@@ -122,11 +129,13 @@ const QuickLinks: React.FC = () => {
               e.preventDefault();
               e.dataTransfer.dropEffect = 'move';
             }}
+            onDragEnter={(e) => {
+              if (draggingId && draggingId !== shortcut.id) {
+                moveShortcut(draggingId, shortcut.id);
+              }
+            }}
             onDrop={(e) => {
               e.preventDefault();
-              const fromId = e.dataTransfer.getData('text/plain');
-              if (fromId) moveShortcut(fromId, shortcut.id);
-              setDraggingId(null);
             }}
             title="Drag to reorder"
             role="button"
@@ -164,11 +173,12 @@ const QuickLinks: React.FC = () => {
             >
               ✎
             </button>
-          </div>
+          </motion.div>
         ))}
+        </AnimatePresence>
 
         {/* Add Button */}
-        <div className="flex flex-col items-center justify-center">
+        <motion.div layout className="flex flex-col items-center justify-center">
             <button
             onClick={() => setIsEditing(!isEditing)}
             className="w-14 h-14 md:w-16 md:h-16 bg-white/5 hover:bg-white/10 backdrop-blur-sm rounded-[18px] md:rounded-[22px] flex items-center justify-center transition-all duration-300 border border-white/10 border-dashed group"
@@ -178,7 +188,7 @@ const QuickLinks: React.FC = () => {
                 <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
             </button>
-        </div>
+        </motion.div>
       </div>
 
       {/* Edit Panel (Absolute positioning to not push content) */}
