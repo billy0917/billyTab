@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { WidgetConfig, WidgetSize } from '../types';
+import { getBackground, saveBackground, removeBackground } from '../services/storageService';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -185,11 +186,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <h3 className="text-sm font-semibold mb-3">Backup & Restore</h3>
           <div className="flex gap-2">
             <button
-              onClick={() => {
+              onClick={async () => {
+                const bg = await getBackground();
                 const settings = {
                   widgetConfig: localStorage.getItem('zen_widget_config'),
                   shortcuts: localStorage.getItem('zen_shortcuts'),
-                  background: localStorage.getItem('zen_custom_background'),
+                  background: bg || localStorage.getItem('zen_custom_background'),
                 };
                 const blob = new Blob([JSON.stringify(settings)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
@@ -217,14 +219,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   const file = e.target.files?.[0];
                   if (!file) return;
                   const reader = new FileReader();
-                  reader.onload = (event) => {
+                  reader.onload = async (event) => {
                     try {
                       const settings = JSON.parse(event.target?.result as string);
                       if (settings.widgetConfig) localStorage.setItem('zen_widget_config', settings.widgetConfig);
                       if (settings.shortcuts) localStorage.setItem('zen_shortcuts', settings.shortcuts);
                       if (settings.background) {
-                        localStorage.setItem('zen_custom_background', settings.background);
+                        try {
+                           await saveBackground(settings.background);
+                           localStorage.removeItem('zen_custom_background'); // clear legacy
+                        } catch (e) {
+                           console.error('Failed to save background to DB', e);
+                           // Only fallback to localstorage if it's small enough, but let's just warn
+                           alert('Background image too large/failed to save.');
+                        }
                       } else {
+                        await removeBackground();
                         localStorage.removeItem('zen_custom_background');
                       }
                       window.location.reload();

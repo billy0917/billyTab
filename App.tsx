@@ -6,6 +6,7 @@ import WeatherWidget from './components/WeatherWidget';
 import QuoteWidget from './components/QuoteWidget';
 import SettingsModal from './components/SettingsModal';
 import { WidgetConfig } from './types';
+import { getBackground, saveBackground, removeBackground } from './services/storageService';
 
 const backgrounds = [
   'https://picsum.photos/seed/nature/1920/1080',
@@ -24,26 +25,63 @@ const DEFAULT_WIDGET_CONFIG: WidgetConfig[] = [
 const App: React.FC = () => {
   const [bgImage, setBgImage] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [customBackground, setCustomBackground] = useState<string | null>(() => {
-    return localStorage.getItem('zen_custom_background');
-  });
+  const [customBackground, setCustomBackground] = useState<string | null>(null);
   const [widgetConfig, setWidgetConfig] = useState<WidgetConfig[]>(() => {
     const saved = localStorage.getItem('zen_widget_config');
     return saved ? JSON.parse(saved) : DEFAULT_WIDGET_CONFIG;
   });
 
+  // Load background from DB or LocalStorage (migration) on mount
+  useEffect(() => {
+    const loadBg = async () => {
+      // 1. Check LocalStorage (Legacy support)
+      const legacyBg = localStorage.getItem('zen_custom_background');
+      if (legacyBg) {
+        setCustomBackground(legacyBg);
+        setBgImage(legacyBg);
+        await saveBackground(legacyBg); // Migrate to DB
+        localStorage.removeItem('zen_custom_background'); // Cleanup
+        return;
+      }
+
+      // 2. Check IndexedDB
+      try {
+        const dbBg = await getBackground();
+        if (dbBg) {
+            setCustomBackground(dbBg);
+            setBgImage(dbBg);
+        } else {
+            // 3. Random default
+            const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+            const img = new Image();
+            img.src = randomBg;
+            img.onload = () => setBgImage(randomBg);
+        }
+      } catch (err) {
+        console.error('Failed to load background', err);
+        // Fallback to random
+        const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+        setBgImage(randomBg);
+      }
+    };
+    loadBg();
+  }, []);
+
+  // Save changes to DB
   useEffect(() => {
     if (customBackground) {
       setBgImage(customBackground);
-      localStorage.setItem('zen_custom_background', customBackground);
-      return;
+      saveBackground(customBackground).catch(console.error);
+    } else {
+      // Only remove if we explicitly set it to null (reset), 
+      // not during initial load (where it starts as null)
+      // Logic handled in handleBackgroundReset mostly, but ensuring consistency here:
+      if (bgImage && !backgrounds.includes(bgImage)) {
+           // If current bg is not one of the defaults, and customBackground is null, 
+           // it means we are resetting or it's initial load.
+           // However, let's rely on handleBackgroundReset for explicit removal to avoid race conditions.
+      }
     }
-
-    localStorage.removeItem('zen_custom_background');
-    const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
-    const img = new Image();
-    img.src = randomBg;
-    img.onload = () => setBgImage(randomBg);
   }, [customBackground]);
 
   useEffect(() => {
@@ -56,6 +94,10 @@ const App: React.FC = () => {
 
   const handleBackgroundReset = () => {
     setCustomBackground(null);
+    removeBackground().then(() => {
+        const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+        setBgImage(randomBg);
+    });
   };
 
   // Helper to get grid classes based on size
