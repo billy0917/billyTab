@@ -24,6 +24,10 @@ const DEFAULT_WIDGET_CONFIG: WidgetConfig[] = [
 
 const App: React.FC = () => {
   const [bgImage, setBgImage] = useState('');
+  const [bgBlur, setBgBlur] = useState<number>(() => {
+    const saved = localStorage.getItem('zen_bg_blur');
+    return saved ? parseInt(saved, 10) : 0;
+  });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [customBackground, setCustomBackground] = useState<string | null>(null);
   const [widgetConfig, setWidgetConfig] = useState<WidgetConfig[]>(() => {
@@ -88,6 +92,10 @@ const App: React.FC = () => {
     localStorage.setItem('zen_widget_config', JSON.stringify(widgetConfig));
   }, [widgetConfig]);
 
+  useEffect(() => {
+    localStorage.setItem('zen_bg_blur', bgBlur.toString());
+  }, [bgBlur]);
+
   const handleBackgroundChange = (url: string) => {
     setCustomBackground(url);
   };
@@ -123,16 +131,39 @@ const App: React.FC = () => {
     }
   };
 
+  const isVideo = React.useMemo(() => {
+    if (!bgImage) return false;
+    return bgImage.startsWith('data:video') || /\.(mp4|webm|ogg)$/i.test(bgImage);
+  }, [bgImage]);
+
   return (
     <div 
-      className="h-screen w-screen overflow-hidden flex flex-col items-center justify-between relative bg-gray-900 transition-all duration-1000 ease-in-out"
-      style={{
-        backgroundImage: bgImage ? `url(${bgImage})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
+      className="h-screen w-screen overflow-hidden flex flex-col items-center justify-between relative bg-gray-900"
     >
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] z-0"></div>
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {isVideo ? (
+            <video 
+            src={bgImage} 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            className="w-full h-full object-cover transition-all duration-1000 ease-in-out"
+            style={{ filter: `blur(${bgBlur}px)` }}
+            />
+        ) : (
+            <div 
+            className="w-full h-full transition-all duration-1000 ease-in-out"
+            style={{
+                backgroundImage: bgImage ? `url(${bgImage})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                filter: `blur(${bgBlur}px)`
+            }}
+            />
+        )}
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+      </div>
 
       <main className="relative z-10 w-full max-w-[1200px] h-full mx-auto p-6 flex flex-col items-center justify-center gap-8 animate-fade-in">
         
@@ -182,6 +213,8 @@ const App: React.FC = () => {
         backgroundImage={customBackground}
         onBackgroundChange={handleBackgroundChange}
         onBackgroundReset={handleBackgroundReset}
+        bgBlur={bgBlur}
+        onBgBlurChange={setBgBlur}
       />
 
       <style>{`

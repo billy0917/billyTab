@@ -10,6 +10,8 @@ interface SettingsModalProps {
   backgroundImage: string | null;
   onBackgroundChange: (url: string) => void;
   onBackgroundReset: () => void;
+  bgBlur: number;
+  onBgBlurChange: (blur: number) => void;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -19,7 +21,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onConfigChange,
   backgroundImage,
   onBackgroundChange,
-  onBackgroundReset
+  onBackgroundReset,
+  bgBlur,
+  onBgBlurChange
 }) => {
   if (!isOpen) return null;
 
@@ -130,11 +134,23 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         <div className="mt-6 pt-6 border-t border-white/10">
-          <h3 className="text-sm font-semibold mb-3">Background Image</h3>
+          <h3 className="text-sm font-semibold mb-3">Background & Blur</h3>
           <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between bg-black/30 p-3 rounded-xl border border-white/10">
+               <span className="text-sm text-white/70">Blur Intensity: {bgBlur}px</span>
+               <input 
+                 type="range" 
+                 min="0" 
+                 max="20" 
+                 value={bgBlur} 
+                 onChange={(e) => onBgBlurChange(parseInt(e.target.value))}
+                 className="w-1/2 accent-white cursor-pointer" 
+               />
+            </div>
+
             <input
               type="text"
-              placeholder="Paste image URL"
+              placeholder="Paste image/video URL"
               value={bgUrlInput}
               onChange={(e) => setBgUrlInput(e.target.value)}
               className="bg-black/30 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-black/50 focus:border-white/30 transition-all placeholder-white/30"
@@ -153,10 +169,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 Apply URL
               </button>
               <label className="bg-white/10 text-white px-4 py-2 rounded-lg font-semibold hover:bg-white/20 transition-colors cursor-pointer">
-                Upload Image
+                Upload Media
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/mp4,video/webm"
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
@@ -178,7 +194,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 Reset to Random
               </button>
             </div>
-            <p className="text-xs text-white/40">Custom background is saved locally in your browser.</p>
+            <p className="text-xs text-white/40">Custom background (Image/Video) is saved locally.</p>
           </div>
         </div>
 
@@ -192,6 +208,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   widgetConfig: localStorage.getItem('zen_widget_config'),
                   shortcuts: localStorage.getItem('zen_shortcuts'),
                   background: bg || localStorage.getItem('zen_custom_background'),
+                  bgBlur: localStorage.getItem('zen_bg_blur'),
                 };
                 const blob = new Blob([JSON.stringify(settings)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
@@ -224,6 +241,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                       const settings = JSON.parse(event.target?.result as string);
                       if (settings.widgetConfig) localStorage.setItem('zen_widget_config', settings.widgetConfig);
                       if (settings.shortcuts) localStorage.setItem('zen_shortcuts', settings.shortcuts);
+                      if (settings.bgBlur) localStorage.setItem('zen_bg_blur', settings.bgBlur);
                       if (settings.background) {
                         try {
                            await saveBackground(settings.background);
